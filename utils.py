@@ -3,9 +3,7 @@
 This file contains utility functions for the simulation.
 ========================================================================================================================
 """
-from pyaedt import Hfss
-from typing import Dict
-from qiskit_metal.qlibrary.base.base ifrom qiskit_metal import draw, Dict, designs, MetalGUI
+from qiskit_metal import draw, Dict, designs, MetalGUI
 from qiskit_metal.toolbox_metal import math_and_overrides
 from qiskit_metal.qlibrary.core import QComponent
 import qiskit_metal as metal
@@ -21,9 +19,13 @@ from qiskit_metal.qlibrary.terminations.open_to_ground import OpenToGround
 from qiskit_metal.qlibrary.couplers.coupled_line_tee import CoupledLineTee
 from qiskit_metal.qlibrary.couplers.cap_n_interdigital_tee import CapNInterdigitalTee
 from qiskit_metal.qlibrary.couplers.line_tee import LineTee
-from qiskit_metal.analyses.quantization import EPRanalysis
+
 from collections import OrderedDict
-import numpy as npmport QComponent
+
+import numpy as np
+from pyaedt import Hfss
+from typing import Dict
+
 
 def getMeshScreenshot(projectname,designname,solutiontype="Eigenmode"):
     """Interfaces w/ ANSYS via pyEPR for more custom automation.
