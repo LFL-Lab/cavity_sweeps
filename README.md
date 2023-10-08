@@ -7,7 +7,8 @@
 - [x] Test creation of singular simulation unit with varied input source
 - [x] Implement the dynamic mesh creation
 - [x] Implement eigenmodal sim
-- [ ] Ensure correct material properties are used
+- [x] Ensure correct material properties are used
+- [x] Ansys project name check
 - [ ] Ansys project name creation + memory management
 - [ ] Scriptify the eigenmodal sim
 - [ ] Implement LOM sim + kappa extraction
