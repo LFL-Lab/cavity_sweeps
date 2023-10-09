@@ -55,7 +55,7 @@ def set_simulation_hyperparameters(epra, config):
     return setup
 
 
-def render_simulation(epra, ansys_design_name, setup_vars, coupler):
+def render_simulation_with_ports(epra, ansys_design_name, setup_vars, coupler):
     """
     Renders the simulation into HFSS.
 
@@ -69,6 +69,21 @@ def render_simulation(epra, ansys_design_name, setup_vars, coupler):
                      vars_to_initialize=setup_vars,
                      open_pins=[(coupler.name, "prime_start"), (coupler.name, "prime_end")],
                      port_list=[(coupler.name, 'prime_start', 50), (coupler.name, "prime_end", 50)],
+                     box_plus_buffer=False)
+    print("Sim rendered into HFSS!")
+
+def render_simulation_no_ports(epra, ansys_design_name, setup_vars, coupler):
+    """
+    Renders the simulation into HFSS.
+
+    :param epra: The EPR analysis object.
+    :param ansys_design_name: The name of the Ansys design.
+    :param setup_vars: The setup variables for the rendering.
+    :param coupler: The coupler object.
+    """
+    epra.sim._render(name=ansys_design_name,
+                     solution_type='eigenmode',
+                     vars_to_initialize=setup_vars,
                      box_plus_buffer=False)
     print("Sim rendered into HFSS!")
 
