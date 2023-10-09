@@ -9,7 +9,7 @@
 - [x] Implement eigenmodal sim
 - [x] Ensure correct material properties are used
 - [x] Ansys project name check
-- [ ] fix orientation issue of WM1 and MUNINN
+- [x] fix orientation issue of WM1 and MUNINN
 - [ ] Ansys project name creation + memory management
 - [ ] Scriptify the eigenmodal sim
 - [ ] Implement LOM sim + kappa extraction

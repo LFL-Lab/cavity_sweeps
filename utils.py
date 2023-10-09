@@ -146,10 +146,13 @@ def get_freq(epra, test_hfss):
 
     setMaterialProperties(project_name, design_name, solutiontype="Eigenmode")
     epra.sim._analyze()
-    epra.sim.plot_convergences()
-    epra.sim.save_screenshot()
-    epra.sim.plot_fields('main')
-    epra.sim.save_screenshot()
+    try:
+        epra.sim.plot_convergences()
+        epra.sim.save_screenshot()
+        epra.sim.plot_fields('main')
+        epra.sim.save_screenshot()
+    except:
+        print("couldn't generate plots.")
     f = epra.get_frequencies()
 
     freq = f.values[0][0] * 1e9
@@ -228,7 +231,7 @@ if __name__ == "__main__":
     mesh_lengths = {
         'mesh1': {"objects": ["ground_strip"], "MaxLength": '4um'},
         'mesh2': {"objects": [f"prime_cpw_{coupler.name}", f"second_cpw_{coupler.name}", f"trace_{cpw.name}", f"readout_connector_arm_{claw.name}"], "MaxLength": '4um'},
-        'mesh3': {"objects": [f"Port_{coupler.name}_prime_end", f"Port_{coupler.name}_prime_start"], "MaxLength": '4um'}
+        # 'mesh3': {"objects": [f"Port_{coupler.name}_prime_end", f"Port_{coupler.name}_prime_start"], "MaxLength": '4um'}
     }
     center, dimensions = calculate_center_and_dimensions(bbox)
     draw_and_update_model(modeler, center, dimensions, coupler, cpw, claw, mesh_lengths)
