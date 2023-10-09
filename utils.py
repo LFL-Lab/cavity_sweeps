@@ -134,8 +134,30 @@ def calculate_center_and_dimensions(bbox):
 
     return (center_x, center_y, center_z), (x_size, y_size, z_size)
 
+def get_freq(epra, test_hfss):
+    """
+    Analyze the simulation, plot the results, and report the frequencies, Q, and kappa.
 
-def analyze_and_report(epra, test_hfss):
+    :param epra: The EPR analysis object.
+    :param test_hfss: The HFSS object.
+    """
+    project_name = test_hfss.pinfo.project_name
+    design_name = test_hfss.pinfo.design_name
+
+    setMaterialProperties(project_name, design_name, solutiontype="Eigenmode")
+    epra.sim._analyze()
+    epra.sim.plot_convergences()
+    epra.sim.save_screenshot()
+    epra.sim.plot_fields('main')
+    epra.sim.save_screenshot()
+    f = epra.get_frequencies()
+
+    freq = f.values[0][0] * 1e9
+    print(f"freq = {round(freq/1e9, 3)} GHz")
+    return freq
+
+
+def get_freq_Q_kappa(epra, test_hfss):
     """
     Analyze the simulation, plot the results, and report the frequencies, Q, and kappa.
 
@@ -159,8 +181,23 @@ def analyze_and_report(epra, test_hfss):
     print(f"freq = {round(freq/1e9, 3)} GHz")
     print(f"Q = {round(Q, 1)}")
     print(f"kappa = {round(kappa/1e6, 3)} MHz")
+    return freq, Q, kappa
 
-def draw_and_update_model(modeler, center, dimensions, coupler, cpw, claw, mesh_lengths):
+def mesh_objects(modeler, mesh_lengths):
+    """
+    Draw the rectangle in the Ansys modeler, update the model, and set the mesh based on the input dictionary.
+
+    :param modeler: The modeler object.
+    :param center: The center coordinates tuple.
+    :param dimensions: The dimensions tuple.
+    :param cpw: The cpw object.
+    :param claw: The claw object.
+    :param mesh_lengths: Dictionary containing mesh names, associated objects, and MaxLength values.
+    """
+    for mesh_name, mesh_info in mesh_lengths.items():
+        modeler.mesh_length(mesh_name, mesh_info['objects'], MaxLength=mesh_info['MaxLength'])
+
+def add_ground_strip_and_mesh(modeler, center, dimensions, coupler, cpw, claw, mesh_lengths):
     """
     Draw the rectangle in the Ansys modeler, update the model, and set the mesh based on the input dictionary.
 
@@ -195,5 +232,5 @@ if __name__ == "__main__":
     }
     center, dimensions = calculate_center_and_dimensions(bbox)
     draw_and_update_model(modeler, center, dimensions, coupler, cpw, claw, mesh_lengths)
-    analyze_and_report(epra, test_hfss)
+    get_freq_Q_kappa(epra, test_hfss)
 
