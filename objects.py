@@ -72,7 +72,7 @@ def render_simulation_with_ports(epra, ansys_design_name, setup_vars, coupler):
                      box_plus_buffer=False)
     print("Sim rendered into HFSS!")
 
-def render_simulation_no_ports(epra,components, ansys_design_name, setup_vars):
+def render_simulation_no_ports(epra, components, open_pins, ansys_design_name, setup_vars):
     """
     Renders the simulation into HFSS.
 
@@ -83,6 +83,7 @@ def render_simulation_no_ports(epra,components, ansys_design_name, setup_vars):
     """
     epra.sim._render(name=ansys_design_name,
                      selection=[qcomp.name for qcomp in components],
+                     open_pins=open_pins,
                      solution_type='eigenmode',
                      vars_to_initialize=setup_vars,
                      box_plus_buffer=False)
