@@ -24,7 +24,6 @@ from collections import OrderedDict
 
 import numpy as np
 from pyaedt import Hfss
-from typing import Dict
 
 
 def getMeshScreenshot(projectname,designname,solutiontype="Eigenmode"):
@@ -225,6 +224,22 @@ def add_ground_strip_and_mesh(modeler, center, dimensions, coupler, cpw, claw, m
 
     for mesh_name, mesh_info in mesh_lengths.items():
         modeler.mesh_length(mesh_name, mesh_info['objects'], MaxLength=mesh_info['MaxLength'])
+
+def create_claw(opts, design):
+    claw = TransmonClaw(design, 'claw', options=opts)
+    return claw
+
+def create_coupler(opts, design):
+    cplr = CapNInterdigitalTee(design, 'cplr', options = opts) if "finger_count" in opts.keys() else CoupledLineTee(design, 'cplr', options = opts)
+    return cplr
+
+def create_cpw(opts, design):
+    opts.update({"pin_inputs" : Dict(start_pin = Dict(component = 'cplr',
+                                                    pin = 'second_end'),
+                                   end_pin = Dict(component = 'claw',
+                                                  pin = 'readout'))})
+    cpw = RouteMeander(design, 'cpw', options = opts)
+    return cpw
 
 if __name__ == "__main__":
     # Usage

@@ -69,7 +69,7 @@ def render_simulation_with_ports(epra, ansys_design_name, setup_vars, coupler):
                      vars_to_initialize=setup_vars,
                      open_pins=[(coupler.name, "prime_start"), (coupler.name, "prime_end")],
                      port_list=[(coupler.name, 'prime_start', 50), (coupler.name, "prime_end", 50)],
-                     box_plus_buffer=False)
+                     box_plus_buffer=True)
     print("Sim rendered into HFSS!")
 
 def render_simulation_no_ports(epra, components, open_pins, ansys_design_name, setup_vars):
@@ -86,7 +86,7 @@ def render_simulation_no_ports(epra, components, open_pins, ansys_design_name, s
                      open_pins=open_pins,
                      solution_type='eigenmode',
                      vars_to_initialize=setup_vars,
-                     box_plus_buffer=False)
+                     box_plus_buffer=True)
     print("Sim rendered into HFSS!")
 
 
