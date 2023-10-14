@@ -6,6 +6,7 @@ SimulationConfig
 
 from qiskit_metal.analyses.quantization import EPRanalysis
 from utils import *
+from sweeper_helperfunctions import *
 
 class SimulationConfig:
     def __init__(self, design_name="CavitySweep", renderer_type="hfss", sim_type="eigenmode",
@@ -20,6 +21,34 @@ class SimulationConfig:
         self.Lj = Lj
         self.Cj = Cj
 
+def sweep(design, sweep_opts):
+    generic_cplr_opts = Dict(prime_width = "11.7um",
+                prime_gap = '5.1um',
+                second_width = "11.7um",
+                second_gap = '5.1um',
+                coupling_space = '7.9um',
+                coupling_length = '225um',
+                open_termination = False,
+                down_length = '50um')
+    
+    for param in extract_QSweep_parameters(sweep_opts):
+        claw = create_claw(param["claw_opts"], design)
+        coupler = create_coupler(generic_cplr_opts, design)
+        cpw = create_cpw(param["cpw_opts"], design)
+
+        config = SimulationConfig()
+
+        epra, hfss = start_simulation(design, config)
+        setup = set_simulation_hyperparameters(epra, config)
+        
+        render_simulation_no_ports(epra, [cpw,claw], [(cpw.name, "start")], config.design_name, setup.vars)
+        modeler = hfss.pinfo.design.modeler
+
+        mesh_lengths = {'mesh1': {"objects": [f"trace_{cpw.name}", f"readout_connector_arm_{claw.name}"], "MaxLength": '4um'}}
+
+        f_rough = get_freq(epra, hfss)
+
+        mesh_objects(modeler,  mesh_lengths)
 
 def start_simulation(design, config):
     """

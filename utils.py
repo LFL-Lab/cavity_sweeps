@@ -158,7 +158,6 @@ def get_freq(epra, test_hfss):
     print(f"freq = {round(freq/1e9, 3)} GHz")
     return freq
 
-
 def get_freq_Q_kappa(epra, test_hfss):
     """
     Analyze the simulation, plot the results, and report the frequencies, Q, and kappa.
@@ -226,20 +225,32 @@ def add_ground_strip_and_mesh(modeler, center, dimensions, coupler, cpw, claw, m
         modeler.mesh_length(mesh_name, mesh_info['objects'], MaxLength=mesh_info['MaxLength'])
 
 def create_claw(opts, design):
+    opts["orientation"] = "-90"
+    opts["pos_x"] = "-1500um"
     claw = TransmonClaw(design, 'claw', options=opts)
     return claw
 
 def create_coupler(opts, design):
+    opts["orientation"] = "-90"
     cplr = CapNInterdigitalTee(design, 'cplr', options = opts) if "finger_count" in opts.keys() else CoupledLineTee(design, 'cplr', options = opts)
     return cplr
 
 def create_cpw(opts, design):
+    opts.update({"lead" : Dict(
+                            start_straight = "50um",
+                            end_straight = "50um")})
     opts.update({"pin_inputs" : Dict(start_pin = Dict(component = 'cplr',
                                                     pin = 'second_end'),
                                    end_pin = Dict(component = 'claw',
                                                   pin = 'readout'))})
+    opts.update({"meander" : Dict(
+                                spacing = "100um",
+                                asymmetry = '-50um')})
     cpw = RouteMeander(design, 'cpw', options = opts)
     return cpw
+
+def as_list(x):
+    return x if type(x) is list else [x]
 
 if __name__ == "__main__":
     # Usage
@@ -251,4 +262,3 @@ if __name__ == "__main__":
     center, dimensions = calculate_center_and_dimensions(bbox)
     draw_and_update_model(modeler, center, dimensions, coupler, cpw, claw, mesh_lengths)
     get_freq_Q_kappa(epra, test_hfss)
-
