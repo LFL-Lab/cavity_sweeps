@@ -24,6 +24,8 @@ from collections import OrderedDict
 
 import numpy as np
 from pyaedt import Hfss
+import json
+from datetime import datetime
 
 
 def getMeshScreenshot(projectname,designname,solutiontype="Eigenmode"):
@@ -251,6 +253,12 @@ def create_cpw(opts, design):
 
 def as_list(x):
     return x if type(x) is list else [x]
+
+def save_simulation_data_to_json(data, filename):
+    filename = f"{filename}.json"
+    
+    with open(filename, 'w') as outfile:
+        json.dump(data, outfile, indent=4)
 
 if __name__ == "__main__":
     # Usage

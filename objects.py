@@ -21,7 +21,7 @@ class SimulationConfig:
         self.Lj = Lj
         self.Cj = Cj
 
-def sweep(design, sweep_opts):
+def epr_sweep(design, sweep_opts):
     generic_cplr_opts = Dict(prime_width = "11.7um",
                 prime_gap = '5.1um',
                 second_width = "11.7um",
@@ -35,6 +35,8 @@ def sweep(design, sweep_opts):
         claw = create_claw(param["claw_opts"], design)
         coupler = create_coupler(generic_cplr_opts, design)
         cpw = create_cpw(param["cpw_opts"], design)
+        # gui.rebuild()
+        # gui.autoscale()
 
         config = SimulationConfig()
 
@@ -45,10 +47,28 @@ def sweep(design, sweep_opts):
         modeler = hfss.pinfo.design.modeler
 
         mesh_lengths = {'mesh1': {"objects": [f"trace_{cpw.name}", f"readout_connector_arm_{claw.name}"], "MaxLength": '4um'}}
-
+        mesh_objects(modeler,  mesh_lengths)
         f_rough = get_freq(epra, hfss)
 
-        mesh_objects(modeler,  mesh_lengths)
+        data = epra.get_data
+
+        data_df = {
+            "design_options": {
+                "coupling_type": "CLT",
+                "geometry_dict": param
+            },
+            "sim_options": {
+                "sim_type": "epr",
+                "setup": setup,
+            },
+            "sim_results": {
+                "cavity_frequency": f_rough
+            },
+            "misc": data
+        }
+        
+        filename = f"CLT_cpw{cpw.options.total_length}_claw{claw.options.connection_pads.readout.claw_width}"
+        save_simulation_data_to_json(data_df, filename)
 
 def start_simulation(design, config):
     """
