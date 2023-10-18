@@ -85,7 +85,7 @@ def NCap_epr_sweep(design, sweep_opts):
 
         data_df = {
             "design_options": {
-                "coupling_type": "CLT",
+                "coupling_type": "Ncap",
                 "geometry_dict": param
             },
             "sim_options": {
@@ -98,7 +98,7 @@ def NCap_epr_sweep(design, sweep_opts):
             "misc": data
         }
         
-        filename = f"CLT_cpw{cpw.options.total_length}_claw{claw.options.connection_pads.readout.claw_width}_clength{coupler.options.coupling_length}"
+        filename = f"NCap_cpw{cpw.options.total_length}_claw{claw.options.connection_pads.readout.claw_width}_clength{coupler.options.coupling_length}"
         save_simulation_data_to_json(data_df, filename)
 
 def start_simulation(design, config):
