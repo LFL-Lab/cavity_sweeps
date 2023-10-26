@@ -1,9 +1,4 @@
 __pycache__/*
 *.csv
 *png
-<<<<<<< HEAD
 *.json
-=======
-*.json
-*.zip
->>>>>>> 59d0e75286031c90cd392b2f760bf926ca9c767e

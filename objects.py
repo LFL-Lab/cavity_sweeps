@@ -91,11 +91,7 @@ def NCap_epr_sweep(design, sweep_opts):
 
         data_df = {
             "design_options": {
-<<<<<<< HEAD
                 "coupling_type": "NCap",
-=======
-                "coupling_type": "Ncap",
->>>>>>> 59d0e75286031c90cd392b2f760bf926ca9c767e
                 "geometry_dict": param
             },
             "sim_options": {
