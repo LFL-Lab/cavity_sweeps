@@ -200,7 +200,7 @@ def mesh_objects(modeler, mesh_lengths):
     for mesh_name, mesh_info in mesh_lengths.items():
         modeler.mesh_length(mesh_name, mesh_info['objects'], MaxLength=mesh_info['MaxLength'])
 
-def add_ground_strip_and_mesh(modeler, center, dimensions, coupler, cpw, claw, mesh_lengths):
+def add_ground_strip_and_mesh(modeler, coupler, mesh_lengths):
     """
     Draw the rectangle in the Ansys modeler, update the model, and set the mesh based on the input dictionary.
 
@@ -212,6 +212,9 @@ def add_ground_strip_and_mesh(modeler, center, dimensions, coupler, cpw, claw, m
     :param claw: The claw object.
     :param mesh_lengths: Dictionary containing mesh names, associated objects, and MaxLength values.
     """
+    bounds = coupler.qgeometry_bounds()
+    bbox = {'min_x': bounds[0], 'max_x': bounds[2], 'min_y': bounds[1], 'max_y': bounds[3]}
+    center, dimensions = calculate_center_and_dimensions(bbox)
     gs = modeler.draw_rect_center(
         [coord * 1e-3 for coord in center],
         x_size=dimensions[0] * 1e-3,
@@ -222,13 +225,14 @@ def add_ground_strip_and_mesh(modeler, center, dimensions, coupler, cpw, claw, m
     modeler.intersect(["ground_strip", "ground_main_plane"], True)
     modeler.subtract("ground_main_plane", ["ground_strip"], True)
     modeler.assign_perfect_E(["ground_strip"])
+    mesh_lengths.update({'mesh_ground_strip': {"objects": ["ground_strip"], "MaxLength": '4um'}})
 
     for mesh_name, mesh_info in mesh_lengths.items():
         modeler.mesh_length(mesh_name, mesh_info['objects'], MaxLength=mesh_info['MaxLength'])
 
-def create_claw(opts, design):
+def create_claw(opts, cpw_length, design):
     opts["orientation"] = "-90"
-    opts["pos_x"] = "-1500um"
+    opts["pos_x"] = "-1500um" if cpw_length > 2500 else "-1000um"
     claw = TransmonClaw(design, 'claw', options=opts)
     return claw
 
@@ -237,17 +241,19 @@ def create_coupler(opts, design):
     cplr = CapNInterdigitalTee(design, 'cplr', options = opts) if "finger_count" in opts.keys() else CoupledLineTee(design, 'cplr', options = opts)
     return cplr
 
-def create_cpw(opts, design):
+def create_cpw(opts, cplr, design):
     opts.update({"lead" : Dict(
                             start_straight = "50um",
-                            end_straight = "50um")})
+                            # end_straight = "50um"
+                            )})
     opts.update({"pin_inputs" : Dict(start_pin = Dict(component = 'cplr',
                                                     pin = 'second_end'),
                                    end_pin = Dict(component = 'claw',
                                                   pin = 'readout'))})
     opts.update({"meander" : Dict(
                                 spacing = "100um",
-                                asymmetry = '-50um')})
+                                asymmetry = f'{int("".join(filter(str.isdigit, cplr.options["coupling_length"])))/(-2)}um' # need this to make CPW asymmetry half of the coupling length
+                                )})                                                                                        # if not, sharp kinks occur in CPW :(
     cpw = RouteMeander(design, 'cpw', options = opts)
     return cpw
 

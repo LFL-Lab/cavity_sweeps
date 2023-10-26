@@ -23,9 +23,12 @@ class SimulationConfig:
 
 def CLT_epr_sweep(design, sweep_opts):    
     for param in extract_QSweep_parameters(sweep_opts):
-        claw = create_claw(param["claw_opts"], design)
+        # if int("".join(filter(str.isdigit, param["cpw_opts"]["total_length"]))) < 2000:
+        # param["claw_opts"].update({"pos_x": ("-1000um" if int("".join(filter(str.isdigit, param["cpw_opts"]["total_length"]))) < 2000 else "-1500um") })
+        cpw_length = int("".join(filter(str.isdigit, param["cpw_opts"]["total_length"])))
+        claw = create_claw(param["claw_opts"], cpw_length, design)
         coupler = create_coupler(param["cplr_opts"], design)
-        cpw = create_cpw(param["cpw_opts"], design)
+        cpw = create_cpw(param["cpw_opts"], coupler, design)
         # gui.rebuild()
         # gui.autoscale()
 
@@ -33,13 +36,14 @@ def CLT_epr_sweep(design, sweep_opts):
 
         epra, hfss = start_simulation(design, config)
         setup = set_simulation_hyperparameters(epra, config)
-        
-        render_simulation_no_ports(epra, [cpw,claw], [(cpw.name, "start")], config.design_name, setup.vars)
+        epra.sim.renderer.options.max_mesh_length_port = '4um'
+
+        render_simulation_with_ports(epra, config.design_name, setup.vars, coupler)
         modeler = hfss.pinfo.design.modeler
 
-        mesh_lengths = {'mesh1': {"objects": [f"trace_{cpw.name}", f"readout_connector_arm_{claw.name}"], "MaxLength": '4um'}}
-        mesh_objects(modeler,  mesh_lengths)
-        f_rough = get_freq(epra, hfss)
+        mesh_lengths = {'mesh1': {"objects": [f"prime_cpw_{coupler.name}", f"second_cpw_{coupler.name}", f"trace_{cpw.name}", f"readout_connector_arm_{claw.name}"], "MaxLength": '4um'}}
+        add_ground_strip_and_mesh(modeler, coupler, mesh_lengths=mesh_lengths)
+        f_rough, Q, kappa = get_freq_Q_kappa(epra, hfss)
 
         data = epra.get_data()
 
@@ -53,7 +57,9 @@ def CLT_epr_sweep(design, sweep_opts):
                 "setup": setup,
             },
             "sim_results": {
-                "cavity_frequency": f_rough
+                "cavity_frequency": f_rough,
+                "Q": Q,
+                "kappa": kappa
             },
             "misc": data
         }
@@ -85,7 +91,7 @@ def NCap_epr_sweep(design, sweep_opts):
 
         data_df = {
             "design_options": {
-                "coupling_type": "Ncap",
+                "coupling_type": "NCap",
                 "geometry_dict": param
             },
             "sim_options": {
