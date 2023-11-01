@@ -7,6 +7,7 @@ SimulationConfig
 from qiskit_metal.analyses.quantization import EPRanalysis
 from utils import *
 from sweeper_helperfunctions import *
+from qiskit_metal.analyses.quantization import LOManalysis
 
 class SimulationConfig:
     def __init__(self, design_name="CavitySweep", renderer_type="hfss", sim_type="eigenmode",
@@ -74,7 +75,7 @@ def NCap_epr_sweep(design, sweep_opts):
         cpw = create_cpw(param["cpw_opts"], design)
         # gui.rebuild()
         # gui.autoscale()
-
+        
         config = SimulationConfig()
 
         epra, hfss = start_simulation(design, config)
@@ -105,6 +106,57 @@ def NCap_epr_sweep(design, sweep_opts):
         }
         
         filename = f"NCap_cpw{cpw.options.total_length}_claw{claw.options.connection_pads.readout.claw_width}_clength{coupler.options.coupling_length}"
+        save_simulation_data_to_json(data_df, filename)
+
+def NCap_LOM_sweep(design, sweep_opts):
+    for param in extract_QSweep_parameters(sweep_opts):
+        # claw = create_claw(param["claw_opts"], design)
+        coupler = create_coupler(param, design)
+        # coupler.options[""]
+        # cpw = create_cpw(param["cpw_opts"], design)
+        # gui.rebuild()
+        # gui.autoscale()
+
+        loma = LOManalysis(design, "q3d")
+        loma.sim.setup.reuse_selected_design = False
+        loma.sim.setup.reuse_setup = False
+
+        # example: update single setting
+        loma.sim.setup.max_passes = 30
+        loma.sim.setup.min_converged_passes = 5
+        loma.sim.setup.percent_error = 0.1
+        loma.sim.setup.auto_increase_solution_order = 'False'
+        loma.sim.setup.solution_order = 'Medium'
+
+        loma.sim.setup.name = 'lom_setup'
+
+        loma.sim.run(name = 'LOMv2.01', components=[coupler.name],
+        open_terminations=[(coupler.name, pin_name) for pin_name in coupler.pin_names])
+        cap_df = loma.sim.capacitance_matrix
+        data = loma.get_data()
+        setup = loma.sim.setup
+
+        data_df = {
+            "design_options": {
+                "coupling_type": "NCap",
+                "geometry_dict": param
+            },
+            "sim_options": {
+                "sim_type": "lom",
+                "setup": setup,
+            },
+            "sim_results": {
+                "C_top2top" : abs(cap_df[f"cap_body_0_{coupler.name}"].values[0]),
+                "C_top2bottom" : abs(cap_df[f"cap_body_0_{coupler.name}"].values[1]),
+                "C_top2ground" : abs(cap_df[f"cap_body_0_{coupler.name}"].values[2]),
+                "C_bottom2bottom" : abs(cap_df[f"cap_body_1_{coupler.name}"].values[1]),
+                "C_bottom2ground" : abs(cap_df[f"cap_body_1_{coupler.name}"].values[2]),
+                "C_ground2ground" : abs(cap_df[f"ground_main_plane"].values[2]),
+            },
+            "misc": data
+        }
+
+        filename = f"NCap_LOM_fingerwidth{coupler.options.cap_width}_fingercount{coupler.options.finger_count}_fingerlength{coupler.options.finger_length}_fingergap{coupler.options.cap_gap}"
         save_simulation_data_to_json(data_df, filename)
 
 def start_simulation(design, config):
