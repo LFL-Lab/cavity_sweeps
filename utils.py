@@ -266,6 +266,45 @@ def save_simulation_data_to_json(data, filename):
     with open(filename, 'w') as outfile:
         json.dump(data, outfile, indent=4)
 
+def chunk_sweep_options(sweep_opts, N):
+    # Extract claw_lengths and total_lengths from sweep_opts
+    claw_lengths = sweep_opts['claw_opts']['connection_pads']['readout']['claw_length']
+    total_lengths = sweep_opts['cpw_opts']['total_length']
+
+    # Determine the number of claw_lengths to be assigned to each chunk
+    base_chunk_size = len(claw_lengths) // N
+    remainder = len(claw_lengths) % N
+
+    chunks = []
+    start_idx = 0
+    for i in range(N):
+        # Calculate chunk size for this computer
+        chunk_size = base_chunk_size + (1 if i < remainder else 0)
+
+        # Slice the claw_lengths for this chunk
+        claw_length_chunk = claw_lengths[start_idx:start_idx + chunk_size]
+
+        # Each chunk gets a copy of the full total_lengths list
+        new_sweep_opts = {
+            'claw_opts': {
+                'connection_pads': {
+                    'readout': sweep_opts['claw_opts']['connection_pads']['readout'].copy()
+                }
+            },
+            'cpw_opts': sweep_opts['cpw_opts'].copy(),
+            'cplr_opts': sweep_opts['cplr_opts'].copy()
+        }
+
+        new_sweep_opts['claw_opts']['connection_pads']['readout']['claw_length'] = claw_length_chunk
+        new_sweep_opts['cpw_opts']['total_length'] = total_lengths
+
+        chunks.append(new_sweep_opts)
+
+        # Update the start index for the next chunk
+        start_idx += chunk_size
+
+    return chunks
+
 if __name__ == "__main__":
     # Usage
     mesh_lengths = {
