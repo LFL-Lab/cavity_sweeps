@@ -24,6 +24,7 @@ class SimulationConfig:
 
 def CLT_epr_sweep(design, sweep_opts, comp_name):    
     for param in extract_QSweep_parameters(sweep_opts):
+        print(param)
         # if int("".join(filter(str.isdigit, param["cpw_opts"]["total_length"]))) < 2000:
         # param["claw_opts"].update({"pos_x": ("-1000um" if int("".join(filter(str.isdigit, param["cpw_opts"]["total_length"]))) < 2000 else "-1500um") })
         cpw_length = int("".join(filter(str.isdigit, param["cpw_opts"]["total_length"])))
