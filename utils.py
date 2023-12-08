@@ -255,10 +255,10 @@ def create_cpw(opts, cplr, design):
                                                     pin = 'second_end'),
                                    end_pin = Dict(component = 'claw',
                                                   pin = 'readout'))})
-    # opts.update({"meander" : Dict(
-    #                             spacing = "100um",
-    #                             # asymmetry = f'{int("".join(filter(str.isdigit, cplr.options["coupling_length"])))/(2)}um' # need this to make CPW asymmetry half of the coupling length
-    #                             )})                                                                                        # if not, sharp kinks occur in CPW :(
+    opts.update({"meander" : Dict(
+                                spacing = "100um",
+                                asymmetry = f'{int("".join(filter(str.isdigit, cplr.options["coupling_length"])))/(-2.5)}um' # need this to make CPW asymmetry half of the coupling length
+                                )})                                                                                        # if not, sharp kinks occur in CPW :(
     cpw = RouteMeander(design, 'cpw', options = opts)
     return cpw
 
