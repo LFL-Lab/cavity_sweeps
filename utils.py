@@ -247,7 +247,7 @@ def create_cpw(opts, cplr, design):
     jogs[0] = ["R90", f'{adj_distance/(1.5)}um']
     opts.update({"lead" : Dict(
                             start_straight = "100um",
-                            end_straight = "50um",
+                            end_straight = "100um",
                             
                             start_jogged_extension = jogs
                             )})
