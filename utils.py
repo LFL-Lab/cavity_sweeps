@@ -242,14 +242,14 @@ def create_coupler(opts, design):
     return cplr
 
 def create_cpw(opts, cplr, design):
-    # jogs = OrderedDict()
-    # # jogs[0] = []
-    # jogs[0] = ["R90", f'{int("".join(filter(str.isdigit, cplr.options["coupling_length"])))/(2)}um']
+    adj_distance = int("".join(filter(str.isdigit, cplr.options["coupling_length"]))) if int("".join(filter(str.isdigit, cplr.options["coupling_length"]))) > 150 else 0
+    jogs = OrderedDict()
+    jogs[0] = ["R90", f'{adj_distance/(1.5)}um']
     opts.update({"lead" : Dict(
                             start_straight = "100um",
-                            # end_straight = "50um"
+                            end_straight = "50um",
                             
-                            # start_jogged_extension = jogs
+                            start_jogged_extension = jogs
                             )})
     opts.update({"pin_inputs" : Dict(start_pin = Dict(component = cplr.name,
                                                     pin = 'second_end'),
@@ -257,8 +257,8 @@ def create_cpw(opts, cplr, design):
                                                   pin = 'readout'))})
     opts.update({"meander" : Dict(
                                 spacing = "100um",
-                                asymmetry = f'{int("".join(filter(str.isdigit, cplr.options["coupling_length"])))/(-2.5)}um' # need this to make CPW asymmetry half of the coupling length
-                                )})                                                                                        # if not, sharp kinks occur in CPW :(
+                                asymmetry = f'{adj_distance/(3)}um' # need this to make CPW asymmetry half of the coupling length
+                                )})                                 # if not, sharp kinks occur in CPW :(
     cpw = RouteMeander(design, 'cpw', options = opts)
     return cpw
 
