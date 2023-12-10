@@ -34,7 +34,7 @@ def CLT_epr_sweep(design, sweep_opts, comp_name):
         # gui.rebuild()
         # gui.autoscale()
 
-        config = SimulationConfig(design_name=f"CLT__claw{claw.options.connection_pads.readout.claw_length}_{comp_name}_{datetime.now().strftime('%d%m%Y_%H.%M.%S')}")
+        config = SimulationConfig(min_converged_passes=3, design_name=f"CLT__claw{claw.options.connection_pads.readout.claw_length}_{comp_name}_{datetime.now().strftime('%d%m%Y_%H.%M.%S')}")
 
         epra, hfss = start_simulation(design, config)
         setup = set_simulation_hyperparameters(epra, config)
@@ -189,7 +189,7 @@ def set_simulation_hyperparameters(epra, config):
     setup.name = config.setup_name
     setup.max_passes = config.max_passes
     setup.max_delta_f = config.max_delta_f
-    setup.min_converged_passes = config.min_converged_passes
+    setup.min_converged = config.min_converged_passes
     setup.n_modes = 1
     setup.vars = {'Lj': f'{config.Lj}nH', 'Cj': f'{config.Cj}fF'}
     return setup
